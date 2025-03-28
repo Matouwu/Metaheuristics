@@ -4,8 +4,8 @@
 typedef int Board[85][85];
 typedef int B[85];
 
-
-
+void initBoard(Board board);
+void display_board(Board board);
 
 
 
