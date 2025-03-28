@@ -13,10 +13,8 @@ int main(int argc, char *argv[]){
 
   Board board;
   initBoard(board);
+  fread_board(argv[1], board);
   display_board(board);
-
-
-
 
   return EXIT_SUCCESS;
 }
