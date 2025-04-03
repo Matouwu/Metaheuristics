@@ -21,7 +21,6 @@ genetic.o: genetic.c genetic.h
 location.o: location.c location.h
 	$(CC) -c location.c $(CFLAGS)
 
-
 clean:
 	rm -f *.o
 	rm -f *~
