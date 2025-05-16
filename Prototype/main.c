@@ -7,7 +7,6 @@
 #include "location.h"
 #include "genetic.h"
 #include "graphic.h"
-
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         printf("Usage: %s distance_file.csv\n", argv[0]);
@@ -23,21 +22,22 @@ int main(int argc, char *argv[]) {
     }
 
     Path best_path;
+    int best_fitness;
 
     printf("Démarrage de l'algorithme génétique...\n");
-    get_best_path(board, best_path, MAX_GENERATIONS);
+    solve_tsp(board, best_path, &best_fitness);
     printf("Algorithme génétique terminé.\n");
 
     printf("Meilleur chemin trouvé:\n");
     print_path(best_path);
 
-    int total_distance = calcul_fitness(board, best_path);
-    printf("Distance totale: %d secondes (%.2f minutes)\n",
-           total_distance, total_distance / 60.0);
+    printf("Temps total: %d secondes (%.2f minutes)\n",
+           best_fitness, best_fitness / 60.0);
 
-    float distance_km = total_distance / 60.0 / 60.0 * 50.0;
-    float fuel_consumption = distance_km * 6.5 / 100.0;
-    float fuel_cost = fuel_consumption * 1.72;
+    /* Calcul des statistiques supplémentaires */
+    float distance_km = best_fitness / 3600.0 * 50.0;  /* Conversion temps->km (50 km/h moyen) */
+    float fuel_consumption = distance_km * 6.5 / 100.0; /* 6.5L/100km */
+    float fuel_cost = fuel_consumption * 1.72;          /* 1.72€/L */
 
     printf("Distance approximative: %.2f km\n", distance_km);
     printf("Consommation de carburant estimée: %.2f L\n", fuel_consumption);
