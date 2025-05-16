@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -ansi
+CFLAGS=-Wall -ansi -g
 LDFLAGS=
 OBJ=main.o inout.o graphic.o genetic.o location.o
 
