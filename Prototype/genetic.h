@@ -2,8 +2,6 @@
 #define GENETIC_H
 
 #include "location.h"
-#include "inout.h"
-#include "graphic.h"
 
 #define POPULATION_SIZE 500
 #define MAX_GENERATIONS 1000
@@ -11,9 +9,10 @@
 #define CROSSOVER_RATE 0.85
 #define TOURNAMENT_SIZE 7
 #define STAGNATION_LIMIT 100
+#define MAX_TRIALS 50 // Tentatives pour réparer les solutions
 
 typedef struct {
-    Path path;
+    Solution solution;
     int fitness;
 } Individual;
 
@@ -24,23 +23,28 @@ typedef struct {
     int stagnation_count;
 } Population;
 
-int calculate_fitness(Board board, Path path);
-void init_path(Path path);
-void randomize_path(Board board, Path path);
-void init_population(Board board, Population *pop);
+int calculate_fitness(Board board, Solution* solution);
+void init_solution(Solution* solution);
+void build_initial_solution(Board board, Solution* sol);
+void init_population(Board board, Population* pop);
+Individual tournament_selection(Population* pop);
+void evolve_population(Board board, Population* pop);
+void print_solution(Solution* solution);
+void solve_vrp(Board board, Solution* best_solution);
 
-Individual tournament_selection(Population *pop);
-Individual find_best_individual(Population *pop);
-void evolve_population(Board board, Population *pop);
+// Opérateurs de mutation
+void mutate_move_city(Board board, Individual* indiv);
+void mutate_swap_cities(Individual* indiv);
+void mutate_2opt_route(Board board, Route* route);
+void mutate(Board board, Individual* indiv);
 
-void crossover(Individual *parent1, Individual *parent2, Individual *child1, Individual *child2);
-void mutate(Board board, Individual *individual);
-void copy_path(Path source, Path destination);
+// Croisement
+void crossover(Board board, Individual* parent1, Individual* parent2, Individual* child);
 
-void print_path(Path path);
-int path_contains(Path path, int city, int length);
-int is_valid_path(Path path);
-
-void solve_tsp(Board board, Path best_solution, int *best_fitness);
+// Fonctions utilitaires
+int find_city_in_solution(Solution* sol, int city);
+int is_valid_city(int city);
+void repair_solution(Board board, Solution* sol);
+int route_duration(Board board, Route* route);
 
 #endif /* GENETIC_H */
