@@ -3,31 +3,29 @@
 #include <string.h>
 #include "inout.h"
 
-int fread_board(const char* file, Board board){
+int fread_board(const char* file, Board board) {
     FILE* f = fopen(file, "r");
-    int i = 0;
-    int j = 0;
     char line[MAX_LINE_LENGTH];
+    int row = 0, col = 0;
 
-    if (f == NULL){
+    if (f == NULL) {
         fprintf(stderr, "Erreur d'ouverture du fichier %s\n", file);
         return 0;
     }
 
-    fgets(line, MAX_LINE_LENGTH, f); /* Ignorer la première ligne */
+    // Ignorer l'en-tête
+    fgets(line, MAX_LINE_LENGTH, f);
 
-    while (fgets(line, MAX_LINE_LENGTH, f) != NULL) {
-        char* value = strtok(line, ",");
+    while (fgets(line, MAX_LINE_LENGTH, f) != NULL && row < NUM_CITIES) {
+        col = 0;
+        char* token = strtok(line, ",");
 
-        while (value != NULL) {
-            if (value != NULL) {
-                board[i][j++] = atoi(value);
-            }
-            value = strtok(NULL, ",");
+        while (token != NULL && col < NUM_CITIES) {
+            board[row][col] = atoi(token);
+            token = strtok(NULL, ",");
+            col++;
         }
-
-        i++;
-        j = 0;
+        row++;
     }
 
     fclose(f);
