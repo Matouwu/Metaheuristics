@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "location.h"
+#include "../include/location.h"
 
 void initBoard(Board board) {
   // Initialisation par défaut (sera écrasée par fread_board)
