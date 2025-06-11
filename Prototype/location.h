@@ -4,8 +4,9 @@
 #define NUM_CITIES 85
 #define MAX_VEHICLES 20
 #define MAX_ROUTE_LENGTH 50
-#define MAX_TIME 10800 // 3 heures en secondes (3*3600)
+#define MAX_TIME 10800 // 3 heures en secondes
 #define DEPOT 0
+#define PENALTY_PER_VIOLATION 10000000
 
 typedef int Board[NUM_CITIES][NUM_CITIES];
 
@@ -24,4 +25,4 @@ typedef struct {
 void initBoard(Board board);
 void display_board(Board board);
 
-#endif /* LOCATION_H */
+#endif

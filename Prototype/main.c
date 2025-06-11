@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <limits.h>
 #include "inout.h"
 #include "location.h"
 #include "genetic.h"
@@ -22,12 +23,27 @@ int main(int argc, char* argv[]) {
     display_board(board);
 
     Solution best_solution;
-    printf("Démarrage de l'algorithme VRP...\n");
+    printf("\nDémarrage de l'algorithme génétique...\n");
     clock_t start = clock();
-    solve_vrp(board, &best_solution);
+
+    // Exécuter plusieurs fois pour éviter les minima locaux
+    int best_fitness = INT_MAX;
+    Solution candidate;
+
+    for (int run = 0; run < 5; run++) {
+        solve_vrp(board, &candidate);
+        int fitness = calculate_fitness(board, &candidate);
+
+        if (fitness < best_fitness) {
+            best_solution = candidate;
+            best_fitness = fitness;
+        }
+        printf("Execution %d: fitness=%d\n", run+1, fitness);
+    }
+
     clock_t end = clock();
     double elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("Algorithme terminé en %.2f secondes.\n", elapsed);
+    printf("\nAlgorithme termine en %.2f secondes\n", elapsed);
 
     print_solution(&best_solution);
 

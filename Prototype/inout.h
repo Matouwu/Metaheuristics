@@ -7,6 +7,4 @@
 
 int fread_board(const char* file, Board board);
 
-
-
-#endif /* INOUT_H */
+#endif
