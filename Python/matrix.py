@@ -61,14 +61,14 @@ def extract_and_convert_matrices():
     print(f"✅ Conversion vers indices séquentiels terminée")
 
     # 7. Créer le dossier de sortie et sauvegarder
-    os.makedirs('final_input', exist_ok=True)
+    os.makedirs('output', exist_ok=True)
 
     try:
-        final_distance_matrix.to_csv('final_input/meters.csv', encoding='utf-8')
-        final_time_matrix.to_csv('final_input/time.csv', encoding='utf-8')
-        coord_df.to_csv('final_input/coord.csv', index=False, encoding='utf-8')
+        final_distance_matrix.to_csv('output/meters.csv', encoding='utf-8')
+        final_time_matrix.to_csv('output/time.csv', encoding='utf-8')
+        coord_df.to_csv('output/coord.csv', index=False, encoding='utf-8')
 
-        print(f"✅ Fichiers sauvegardés dans final_input/")
+        print(f"✅ Fichiers sauvegardés dans output/")
 
     except Exception as e:
         print(f"❌ Erreur lors de la sauvegarde: {e}")
@@ -97,8 +97,8 @@ if __name__ == "__main__":
     if result:
         print(f"\n🎉 Extraction réussie!")
         print(f"📁 Fichiers créés:")
-        print(f"   - final_input/meters.csv")
-        print(f"   - final_input/time.csv")
-        print(f"   - final_input/coord.csv")
+        print(f"   - output/meters.csv")
+        print(f"   - output/time.csv")
+        print(f"   - output/coord.csv")
     else:
         print(f"\n❌ Extraction échouée")

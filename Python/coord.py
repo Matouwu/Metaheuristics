@@ -2,16 +2,11 @@ import pandas as pd
 
 
 def create_indexed_pharmacy_file(file):
-    """
-    Crée le fichier sources/coord.csv avec deux colonnes d'indices :
-    - indice : séquentiel de 0 à n (0 = ligne d'indice 0 du fichier original)
-    - indice_original : indices du fichier pharmacies_coordonnees.csv
-    """
 
     print("🔄 Chargement des fichiers...")
 
     # Charger le fichier avec toutes les coordonnées (maintenant avec colonne indice)
-    coord_df = pd.read_csv('pharmacies_coordonnees.csv', encoding='utf-8')
+    coord_df = pd.read_csv('sources/pharmacies_coordonnees.csv', encoding='utf-8')
     print(f"✅ {len(coord_df)} pharmacies avec coordonnées chargées")
 
     # Charger le fichier sous-ensemble
@@ -103,7 +98,7 @@ def create_indexed_pharmacy_file(file):
 
 
 if __name__ == "__main__":
-    result = create_indexed_pharmacy_file('livraison20.csv')
+    result = create_indexed_pharmacy_file('input/livraison20.csv')
 
     # Afficher le résumé final
     valid_pharmacies = result.dropna(subset=['indice'])
