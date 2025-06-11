@@ -4,7 +4,7 @@ LDFLAGS=
 OBJ=main.o inout.o graphic.o genetic.o location.o
 
 recuit: $(OBJ)
-	$(CC) -o recuit $(OBJ) $(CFLAGS) -lMLV
+	$(CC) -o recuit $(OBJ) $(CFLAGS)
 
 main.o: main.c graphic.h
 	$(CC) -c main.c $(CFLAGS)
@@ -13,7 +13,7 @@ inout.o: inout.c inout.h
 	$(CC) -c inout.c $(CFLAGS)
 
 graphic.o: graphic.c graphic.h
-	$(CC) -c graphic.c $(CFLAGS) -lMLV
+	$(CC) -c graphic.c $(CFLAGS)
 
 genetic.o: genetic.c genetic.h
 	$(CC) -c genetic.c $(CFLAGS)
