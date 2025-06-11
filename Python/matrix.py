@@ -55,7 +55,6 @@ def extract_and_convert_matrices():
     try:
         final_distance_matrix.to_csv('output/meters.csv', encoding='utf-8')
         final_time_matrix.to_csv('output/time.csv', encoding='utf-8')
-        coord_df.to_csv('output/coord.csv', index=False, encoding='utf-8')
 
     except Exception as e:
         print(f"Erreur lors de la sauvegarde: {e}")
@@ -64,7 +63,6 @@ def extract_and_convert_matrices():
     print(f"Fichiers créés:")
     print(f"   - output/meters.csv")
     print(f"   - output/time.csv")
-    print(f"   - output/coord.csv")
 
     return final_distance_matrix, final_time_matrix, coord_df
 
