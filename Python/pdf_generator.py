@@ -795,7 +795,7 @@ def main():
     generator = CERPDeliveryPDFGenerator()
 
     if not generator.pharmacies or not generator.time_matrix or not generator.distance_matrix:
-        print("❌ Impossible de charger les données.")
+        print("Impossible de charger les données.")
         return
 
     optimal_route, trucks = generator.parse_route_file()
