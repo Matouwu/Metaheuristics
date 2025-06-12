@@ -50,6 +50,7 @@ int main(int argc, char* argv[]) {
     printf("\nAlgorithme termine en %.2f secondes\n", elapsed);
 
     print_solution(&best_solution);
+    write_solution("data/solution.txt", &best_solution);
 
     // Calcul des statistiques
     float total_distance_km = best_solution.total_duration / 3600.0 * 50.0; // 50 km/h

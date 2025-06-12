@@ -1,7 +1,7 @@
 #ifndef LOCATION_H
 #define LOCATION_H
 
-#define NUM_CITIES 85
+#define NUM_CITIES 21
 #define MAX_VEHICLES 20
 #define MAX_ROUTE_LENGTH 50
 #define MAX_TIME 10800 // 3 heures en secondes

@@ -48,3 +48,27 @@ int fread_board(const char* file, Board board) {
     fclose(f);
     return 1;
 }
+
+void write_solution(const char* filename, Solution* solution) {
+    FILE* f = fopen(filename, "w");
+    if (f == NULL) {
+        fprintf(stderr, "Erreur d'ouverture du fichier %s\n", filename);
+        return;
+    }
+
+    for (int i = 0; i < solution->num_vehicles; i++) {
+        Route* route = &solution->routes[i];
+        fprintf(f, "[");
+
+        for (int j = 0; j < route->length; j++) {
+            if (j == 0)
+                fprintf(f, "%d", route->path[j]);
+            else
+                fprintf(f, ",%d", route->path[j]);
+        }
+
+        fprintf(f, "]\n");
+    }
+
+    fclose(f);
+}
