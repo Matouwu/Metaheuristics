@@ -7,7 +7,7 @@ def extract_and_convert_matrices():
     print("Extraction des sous-matrices...")
 
     try:
-        coord_df = pd.read_csv('output/coord.csv', encoding='utf-8')
+        coord_df = pd.read_csv('Python/output/coord.csv', encoding='utf-8')
     except Exception as e:
         print(f"Erreur: {e}")
         return
@@ -15,8 +15,8 @@ def extract_and_convert_matrices():
     indices_originaux = coord_df['indice_original'].tolist()
 
     try:
-        distance_matrix = pd.read_csv('sources/meters.csv', encoding='utf-8', index_col=0)
-        time_matrix = pd.read_csv('sources/time.csv', encoding='utf-8', index_col=0)
+        distance_matrix = pd.read_csv('Python/sources/meters.csv', encoding='utf-8', index_col=0)
+        time_matrix = pd.read_csv('Python/sources/time.csv', encoding='utf-8', index_col=0)
     except Exception as e:
         print(f"Erreur: {e}")
         return
@@ -46,19 +46,19 @@ def extract_and_convert_matrices():
     )
 
 
-    os.makedirs('output', exist_ok=True)
+    os.makedirs('Python/output', exist_ok=True)
 
     try:
-        final_distance_matrix.to_csv('output/meters.csv', encoding='utf-8')
-        final_time_matrix.to_csv('output/time.csv', encoding='utf-8')
+        final_distance_matrix.to_csv('Python/output/meters.csv', encoding='utf-8')
+        final_time_matrix.to_csv('Python/output/time.csv', encoding='utf-8')
 
     except Exception as e:
         print(f"Erreur lors de la sauvegarde: {e}")
         return
 
     print(f"Fichiers créés:")
-    print(f"   - output/meters.csv")
-    print(f"   - output/time.csv")
+    print(f"   - Python/output/meters.csv")
+    print(f"   - Python/output/time.csv")
 
     return final_distance_matrix, final_time_matrix, coord_df
 
@@ -72,8 +72,8 @@ if __name__ == "__main__":
     if result:
         print(f"\nExtraction réussie!")
         print(f"Fichiers créés:")
-        print(f"   - output/meters.csv")
-        print(f"   - output/time.csv")
-        print(f"   - output/coord.csv")
+        print(f"   - Python/output/meters.csv")
+        print(f"   - Python/output/time.csv")
+        print(f"   - Python/output/coord.csv")
     else:
         print(f"\nExtraction échouée")

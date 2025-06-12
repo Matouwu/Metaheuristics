@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 
 
@@ -6,7 +8,7 @@ def create_indexed_pharmacy_file(file):
     print("Chargement des fichiers")
 
     # Charger le fichier avec toutes les coordonnées (maintenant avec colonne indice)
-    coord_df = pd.read_csv('sources/pharmacies_coordonnees.csv', encoding='utf-8')
+    coord_df = pd.read_csv('Python/sources/pharmacies_coordonnees.csv', encoding='utf-8')
 
     # Charger le fichier sous-ensemble
     subset_df = pd.read_csv(file, header=None,
@@ -65,11 +67,13 @@ def create_indexed_pharmacy_file(file):
     # Créer le DataFrame final
     result_df = pd.DataFrame(result_data)
 
+    os.makedirs("Python/output", exist_ok=True)
+
     # Sauvegarder le fichier
-    result_df.to_csv('output/coord.csv', index=False, encoding='utf-8')
+    result_df.to_csv('Python/output/coord.csv', index=False, encoding='utf-8')
 
     print(f"Fichiers créé:")
-    print(f"   - output/coord.csv")
+    print(f"   - Python/output/coord.csv")
 
     return result_df
 

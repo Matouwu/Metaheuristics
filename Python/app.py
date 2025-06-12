@@ -5,10 +5,9 @@ import pandas as pd
 import os
 from coord import create_indexed_pharmacy_file
 from matrix import extract_and_convert_matrices
-
+from pdf_generator import generate_pdf
 
 def main():
-
     st.header("Upload du fichier CSV")
 
     uploaded_file = st.file_uploader(
@@ -25,8 +24,19 @@ def main():
             st.header("Aperçu du fichier")
             st.dataframe(df)
 
+            val = None
+
             if st.button("Trouver le meilleur chemin", type="primary"):
-                process_file(uploaded_file)
+                with st.spinner("Traitement en cours :"):
+                    process_file(uploaded_file)
+
+            if "result_matrix" in st.session_state:
+                display_matrixes(st.session_state["result_matrix"])
+
+            if "Ran" in st.session_state:
+                if st.button("PDF"):
+                    generate_pdf()
+
 
         except Exception as e:
             st.error(f"Erreur lors de la lecture du fichier: {e}")
@@ -37,48 +47,21 @@ def main():
 
 def process_file(uploaded_file):
 
-    with st.spinner("Traitement en cours..."):
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-
-        try:
-            status_text.text("Extraction des données")
-            progress_bar.progress(10)
-
-            os.makedirs('input', exist_ok=True)
-
-            temp_file_path = f"input/{uploaded_file.name}"
-            with open(temp_file_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-
-            result_coord = create_indexed_pharmacy_file(temp_file_path)
-
-            result_matrix = extract_and_convert_matrices()
-
-            if result_matrix is None:
-                st.error("Échec de l'extraction des matrices")
-                return
-
-            status_text.text("Extraction des données réussie")
-            progress_bar.progress(20)
-
-            number = len(result_coord)
-
-            display_matrixes(result_matrix)
-
-            cmd = ["./../Prototype/recuit", "output/time.csv"]
-
-            result = subprocess.run(cmd, capture_output=True, text=True)
-
-            if result.returncode == 0:
-                return result.stdout
-            else:
-                raise Exception(f"Erreur: {result.stderr}")
-
-        except Exception as e:
-            st.error(f"Erreur durant le traitement: {e}")
-            progress_bar.empty()
-            status_text.empty()
+    try:
+        os.makedirs('Python/input', exist_ok=True)
+        temp_file_path = f"Python/input/{uploaded_file.name}"
+        with open(temp_file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        st.session_state["result_coord"] = create_indexed_pharmacy_file(temp_file_path)
+        st.session_state["result_matrix"]  = extract_and_convert_matrices()
+        if st.session_state["result_matrix"] is None:
+            st.error("Échec de l'extraction des matrices")
+            return
+        cmd = ["./vrp", "./Python/output/time.csv"]
+        subprocess.run(cmd, capture_output=True, text=True)
+        st.session_state["Ran"] = True
+    except Exception as e:
+        st.error(f"Erreur durant le traitement: {e}")
 
 
 def display_matrixes(result_matrix):
@@ -94,7 +77,6 @@ def display_matrixes(result_matrix):
         st.dataframe(result_matrix[2], use_container_width=True)
 
 
-
 if __name__ == "__main__":
 
     st.set_page_config(
@@ -102,5 +84,4 @@ if __name__ == "__main__":
         layout="wide",
         initial_sidebar_state="collapsed"
     )
-
     main()
