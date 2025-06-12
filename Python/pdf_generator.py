@@ -801,7 +801,7 @@ def main():
     optimal_route, trucks = generator.parse_route_file()
 
     if not trucks:
-        print("❌ Aucune camionnette trouvée dans le fichier output")
+        print("Aucune camionnette trouvée dans le fichier output")
         return
 
     print(f"\n📡 Récupération des itinéraires GPS via OpenRouteService...")
