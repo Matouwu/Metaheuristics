@@ -723,7 +723,7 @@ class CERPDeliveryPDFGenerator:
         return output_file
 
 
-def main():
+def generate_pdf():
     """Fonction principale"""
     print("=== Générateur de PDF CERP Rouen ===")
 
@@ -753,5 +753,5 @@ def main():
     print(f"\n✅ Terminé! {len(trucks)} PDF + 1 récapitulatif générés dans ../generated/")
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__generate_pdf__":
+    generate_pdf()
