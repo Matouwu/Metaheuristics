@@ -30,23 +30,24 @@ except ImportError:
 
 class CERPDeliveryPDFGenerator:
     def __init__(self):
-        """Initialise le générateur de PDF"""
         self.depot_address = "600 Rue des Madeleines, 77100 Mareuil-lès-Meaux"
         self.styles = getSampleStyleSheet()
 
-        # Configuration des horaires
         self.morning_start = "09:00"
         self.afternoon_start = "15:00"
-        self.delivery_duration = 3  # minutes par livraison
+        self.delivery_duration = 3
 
-        # Constantes imposées
         self.fuel_consumption_per_100km = 6.5  # L/100km
         self.diesel_price_per_liter = 1.72  # €/L
 
-        # Chemins des fichiers
+        # TODO : REPLACE par le code en commentaire POUR LANCER AVEC STREAMLIT
         pharmacies_file = os.path.join("Python", "sources", "pharmacies_coordonnees.csv")
         time_file = os.path.join("Python", "sources", "time.csv")
         meters_file = os.path.join("Python", "sources", "meters.csv")
+
+        # pharmacies_file = os.path.join("sources", "pharmacies_coordonnees.csv")
+        # time_file = os.path.join("sources", "time.csv")
+        # meters_file = os.path.join("sources", "meters.csv")
 
         print(f"Chargement pharmacies: {pharmacies_file}")
         print(f"Chargement temps: {time_file}")
@@ -56,15 +57,15 @@ class CERPDeliveryPDFGenerator:
         self.time_matrix = self.load_time_matrix(time_file)
         self.distance_matrix = self.load_distance_matrix(meters_file)
 
+        self.all_routes_data = {}
+
     def load_pharmacies(self, file_path):
-        """Charge les pharmacies avec coordonnées GPS"""
         pharmacies = {}
 
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
 
-                # Dépôt à l'index 0
                 pharmacies[0] = {
                     'nom': 'Dépôt CERP Rouen',
                     'adresse': '600 Rue des Madeleines',
@@ -75,7 +76,6 @@ class CERPDeliveryPDFGenerator:
                     'longitude': 2.8738
                 }
 
-                # Pharmacies index 1 à 84
                 for i, row in enumerate(reader, 1):
                     pharmacies[i] = {
                         'nom': row['nom'].strip(),
@@ -91,16 +91,14 @@ class CERPDeliveryPDFGenerator:
             print(f"ERREUR chargement pharmacies: {e}")
             return {}
 
-        print(f"✅ Chargé {len(pharmacies) - 1} pharmacies + 1 dépôt")
         return pharmacies
 
     def load_distances(self, file_path):
-        """Charge la matrice des distances"""
         distances = []
         try:
             with open(file_path, 'r') as f:
                 reader = csv.reader(f)
-                next(reader)  # Skip header
+                next(reader)
 
                 for row in reader:
                     distances.append([int(float(x)) for x in row])
@@ -109,49 +107,42 @@ class CERPDeliveryPDFGenerator:
             print(f"ERREUR chargement distances: {e}")
             return []
 
-        print(f"✅ Matrice distances: {len(distances)}x{len(distances[0]) if distances else 0}")
         return distances
 
     def load_time_matrix(self, file_path):
-        """Charge la matrice des temps depuis time.csv"""
         time_matrix = []
         try:
             with open(file_path, 'r') as f:
                 reader = csv.reader(f)
-                next(reader)  # Skip header
+                next(reader)
 
                 for row in reader:
-                    # Convertir de secondes en minutes
-                    time_matrix.append([float(x) / 60 for x in row[1:]])  # Skip première colonne, convertir sec->min
+                    time_matrix.append([float(x) / 60 for x in row[1:]])
 
         except Exception as e:
             print(f"ERREUR chargement time.csv: {e}")
             return []
 
-        print(f"✅ Matrice temps: {len(time_matrix)}x{len(time_matrix[0]) if time_matrix else 0}")
         return time_matrix
 
     def load_distance_matrix(self, file_path):
-        """Charge la matrice des distances depuis meters.csv"""
         distance_matrix = []
         try:
             with open(file_path, 'r') as f:
                 reader = csv.reader(f)
-                next(reader)  # Skip header
+                next(reader)
 
                 for row in reader:
-                    # Convertir en kilomètres
-                    distance_matrix.append([float(x) / 1000.0 for x in row[1:]])  # Skip première colonne, convertir m->km
+                    distance_matrix.append([float(x) / 1000.0 for x in row[1:]])
 
         except Exception as e:
-            print(f"ERREUR chargement meters.csv: {e}")
+            print(f"ERREUR {e}")
             return []
 
-        print(f"✅ Matrice distances: {len(distance_matrix)}x{len(distance_matrix[0]) if distance_matrix else 0}")
         return distance_matrix
 
-    def parse_route_file(self, route_file=os.path.join("..", "data", "output.txt")):
-        """Parse le nouveau format output.txt avec une ligne par camionnette"""
+    # TODO : ENELVER ".." POUR LANCER AVEC STREAMLIT
+    def parse_route_file(self, route_file=os.path.join("data", "output.txt")):
         try:
             with open(route_file, 'r', encoding='utf-8') as f:
                 content = f.read().strip()
@@ -164,14 +155,11 @@ class CERPDeliveryPDFGenerator:
             trucks = {}
             all_routes = []
 
-            # Chaque ligne = une camionnette
             for truck_num, line in enumerate(lines, 1):
                 if line.strip():
-                    # Parser [17,7,2,14,6,15,1,20,11]
                     route_str = line.strip('[]')
                     route = [int(x.strip()) for x in route_str.split(',') if x.strip()]
 
-                    # Ajouter le dépôt au début
                     truck_route = [0] + route
                     trucks[truck_num] = truck_route
                     all_routes.extend(route)
@@ -191,36 +179,199 @@ class CERPDeliveryPDFGenerator:
             print(f"ERREUR parsing: {e}")
             return [], {}
 
-    def get_route_coordinates_osrm(self, start_coords, end_coords):
-        """Récupère le trajet routier via OSRM"""
-        try:
-            start_lon, start_lat = start_coords[1], start_coords[0]
-            end_lon, end_lat = end_coords[1], end_coords[0]
+    def decode_polyline(self, encoded):
+        """
+        Décode une polyline encodée au format Google
+        Retourne une liste de coordonnées [lat, lon]
+        """
+        coordinates = []
+        index = 0
+        len_encoded = len(encoded)
+        lat = 0
+        lng = 0
 
-            url = f"http://router.project-osrm.org/route/v1/driving/{start_lon},{start_lat};{end_lon},{end_lat}"
-            params = {'overview': 'full', 'geometries': 'geojson'}
+        while index < len_encoded:
+            # Décoder la latitude
+            b = 0
+            shift = 0
+            result = 0
+            while True:
+                b = ord(encoded[index]) - 63
+                index += 1
+                result |= (b & 0x1f) << shift
+                shift += 5
+                if b < 0x20:
+                    break
 
-            response = requests.get(url, params=params, timeout=10)
+            dlat = ~(result >> 1) if (result & 1) else (result >> 1)
+            lat += dlat
 
-            if response.status_code == 200:
-                data = response.json()
-                if 'routes' in data and len(data['routes']) > 0:
-                    coordinates = data['routes'][0]['geometry']['coordinates']
-                    route_coords = [[coord[1], coord[0]] for coord in coordinates]
-                    return route_coords
+            # Décoder la longitude
+            shift = 0
+            result = 0
+            while True:
+                b = ord(encoded[index]) - 63
+                index += 1
+                result |= (b & 0x1f) << shift
+                shift += 5
+                if b < 0x20:
+                    break
 
-            return None
+            dlng = ~(result >> 1) if (result & 1) else (result >> 1)
+            lng += dlng
 
-        except Exception as e:
-            print(f"Erreur OSRM: {e}")
-            return None
+            # Ajouter les coordonnées (lat/lon en degrés * 1e5)
+            coordinates.append([lat * 1e-5, lng * 1e-5])
+
+        return coordinates
+
+    def fetch_all_routes_openrouteservice(self, all_trucks):
+        """
+        Récupère les routes détaillées via l'API OpenRouteService
+        """
+        API_KEY = "5b3ce3597851110001cf62482cb15bb058ef4ee5b65525786431e0cb"
+
+        if API_KEY == "VOTRECLEAPI":
+            print("⚠️ Clé API non configurée.")
+            return
+
+        for truck_num, truck_route in all_trucks.items():
+            print(f"\n📍 Traitement camionnette {truck_num}...")
+
+            # Construire la liste des coordonnées
+            coordinates = []
+            for loc_idx in truck_route:
+                if loc_idx in self.pharmacies:
+                    pharmacy = self.pharmacies[loc_idx]
+                    coordinates.append([pharmacy['longitude'], pharmacy['latitude']])
+
+            # Ajouter le retour au dépôt si nécessaire
+            if truck_route[-1] != 0:
+                depot = self.pharmacies[0]
+                coordinates.append([depot['longitude'], depot['latitude']])
+
+            if len(coordinates) < 2:
+                print(f"⚠️ Pas assez de points pour la camionnette {truck_num}")
+                continue
+
+            try:
+                # Configuration de la requête
+                url = "https://api.openrouteservice.org/v2/directions/driving-car"
+
+                headers = {
+                    'Authorization': API_KEY,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8'
+                }
+
+                # Corps de la requête
+                body = {
+                    "coordinates": coordinates,
+                    "elevation": False,
+                    "geometry": True  # On veut la géométrie
+                }
+
+                print(f"  Envoi requête avec {len(coordinates)} points")
+
+                # Envoi de la requête
+                response = requests.post(url, json=body, headers=headers, timeout=30)
+
+                if response.status_code == 200:
+                    data = response.json()
+
+                    # Vérifier la structure de la réponse
+                    if 'routes' in data and len(data['routes']) > 0:
+                        route_data = data['routes'][0]
+
+                        # Récupérer et traiter la géométrie
+                        if 'geometry' in route_data:
+                            geometry = route_data['geometry']
+
+                            # Cas 1: Polyline encodée (string)
+                            if isinstance(geometry, str):
+                                print(f"  Décodage polyline pour camionnette {truck_num}")
+                                decoded_coords = self.decode_polyline(geometry)
+                                self.all_routes_data[truck_num] = decoded_coords
+                                print(f"  ✓ Route décodée: {len(decoded_coords)} points")
+
+                            # Cas 2: GeoJSON (dict avec coordinates)
+                            elif isinstance(geometry, dict) and 'coordinates' in geometry:
+                                route_coords = [[coord[1], coord[0]] for coord in geometry['coordinates']]
+                                self.all_routes_data[truck_num] = route_coords
+                                print(f"  ✓ Route GeoJSON: {len(route_coords)} points")
+
+                            # Cas 3: Liste de coordonnées directe
+                            elif isinstance(geometry, list):
+                                route_coords = [[coord[1], coord[0]] for coord in geometry]
+                                self.all_routes_data[truck_num] = route_coords
+                                print(f"  ✓ Route directe: {len(route_coords)} points")
+
+                            else:
+                                print(f"  ⚠️ Format de géométrie non reconnu: {type(geometry)}")
+                                # Fallback: utiliser les points de passage
+                                self._use_fallback_route(truck_num, truck_route)
+
+                        # Afficher les statistiques de la route
+                        if 'summary' in route_data:
+                            summary = route_data['summary']
+                            distance_km = summary.get('distance', 0) / 1000
+                            duration_min = summary.get('duration', 0) / 60
+                            print(f"  📊 Distance: {distance_km:.1f} km, Durée: {duration_min:.0f} min")
+
+                    else:
+                        print(f"  ⚠️ Pas de route trouvée dans la réponse")
+                        self._use_fallback_route(truck_num, truck_route)
+
+                elif response.status_code == 401:
+                    print(f"  ❌ Erreur d'authentification. Vérifiez votre clé API.")
+                    self._use_fallback_route(truck_num, truck_route)
+
+                elif response.status_code == 429:
+                    print(f"  ❌ Limite de requêtes atteinte. Réessayez plus tard.")
+                    self._use_fallback_route(truck_num, truck_route)
+
+                else:
+                    print(f"  ❌ Erreur API: {response.status_code}")
+                    print(f"  Réponse: {response.text[:200]}...")
+                    self._use_fallback_route(truck_num, truck_route)
+
+            except requests.exceptions.Timeout:
+                print(f"  ⏱️ Timeout pour camionnette {truck_num}")
+                self._use_fallback_route(truck_num, truck_route)
+
+            except requests.exceptions.ConnectionError:
+                print(f"  🌐 Erreur de connexion pour camionnette {truck_num}")
+                self._use_fallback_route(truck_num, truck_route)
+
+            except Exception as e:
+                print(f"  ❌ Erreur inattendue pour camionnette {truck_num}: {e}")
+                import traceback
+                traceback.print_exc()
+                self._use_fallback_route(truck_num, truck_route)
+
+        print(f"\n✅ Traitement terminé. {len(self.all_routes_data)} routes récupérées.")
+
+    def _use_fallback_route(self, truck_num, truck_route):
+        """
+        Utilise une route simplifiée en cas d'échec de l'API
+        """
+        print(f"  → Utilisation route simplifiée pour camionnette {truck_num}")
+        simple_coords = []
+        for loc_idx in truck_route:
+            if loc_idx in self.pharmacies:
+                pharmacy = self.pharmacies[loc_idx]
+                simple_coords.append([pharmacy['latitude'], pharmacy['longitude']])
+
+        if truck_route[-1] != 0:
+            depot = self.pharmacies[0]
+            simple_coords.append([depot['latitude'], depot['longitude']])
+
+        self.all_routes_data[truck_num] = simple_coords
 
     def create_map_image(self, route, truck_number):
-        """Crée une carte avec trajets routiers OSRM"""
         if not route or len(route) < 2:
             return None
 
-        # Récupérer les coordonnées
         points = []
         for loc_idx in route:
             if loc_idx in self.pharmacies:
@@ -235,14 +386,12 @@ class CERPDeliveryPDFGenerator:
         if len(points) < 2:
             return None
 
-        # Calculer les limites
         lats = [p['lat'] for p in points]
         lons = [p['lon'] for p in points]
 
         min_lat, max_lat = min(lats), max(lats)
         min_lon, max_lon = min(lons), max(lons)
 
-        # Marges
         lat_range = max_lat - min_lat
         lon_range = max_lon - min_lon
         margin_lat = max(0.01, lat_range * 0.15)
@@ -253,10 +402,7 @@ class CERPDeliveryPDFGenerator:
         min_lon -= margin_lon
         max_lon += margin_lon
 
-        # Créer la figure
         fig, ax = plt.subplots(figsize=(12, 10))
-
-        # Essayer contextily pour vraie carte
         use_contextily = CONTEXTILY_AVAILABLE
 
         if use_contextily:
@@ -269,55 +415,20 @@ class CERPDeliveryPDFGenerator:
                 ax.set_xlim(west, east)
                 ax.set_ylim(south, north)
 
-                # Carte plus plate vue du dessus
                 ctx.add_basemap(ax, crs="EPSG:3857", source=ctx.providers.CartoDB.Positron, zoom=12)
 
-                # Convertir points en Web Mercator
                 for point in points:
                     point['x'], point['y'] = transformer.transform(point['lon'], point['lat'])
 
-                # Dessiner trajets OSRM
-                for i in range(len(points) - 1):
-                    start_point = points[i]
-                    end_point = points[i + 1]
+                if truck_number in self.all_routes_data:
+                    route_geometry = self.all_routes_data[truck_number]
+                    route_x, route_y = [], []
+                    for coord in route_geometry:
+                        x, y = transformer.transform(coord[1], coord[0])
+                        route_x.append(x)
+                        route_y.append(y)
+                    ax.plot(route_x, route_y, 'blue', linewidth=3, alpha=0.8, zorder=5)
 
-                    start_coords = [start_point['lat'], start_point['lon']]
-                    end_coords = [end_point['lat'], end_point['lon']]
-
-                    route_coords = self.get_route_coordinates_osrm(start_coords, end_coords)
-
-                    if route_coords and len(route_coords) > 1:
-                        route_x, route_y = [], []
-                        for coord in route_coords:
-                            x, y = transformer.transform(coord[1], coord[0])
-                            route_x.append(x)
-                            route_y.append(y)
-
-                        ax.plot(route_x, route_y, 'blue', linewidth=3, alpha=0.8, zorder=5)
-                    else:
-                        ax.plot([start_point['x'], end_point['x']],
-                                [start_point['y'], end_point['y']],
-                                'blue', linestyle='--', linewidth=2, alpha=0.6, zorder=5)
-
-                # Retour au dépôt
-                if len(points) > 1 and not points[-1]['is_depot']:
-                    last_point = points[-1]
-                    depot_point = points[0]
-
-                    start_coords = [last_point['lat'], last_point['lon']]
-                    end_coords = [depot_point['lat'], depot_point['lon']]
-
-                    route_coords = self.get_route_coordinates_osrm(start_coords, end_coords)
-
-                    if route_coords and len(route_coords) > 1:
-                        route_x, route_y = [], []
-                        for coord in route_coords:
-                            x, y = transformer.transform(coord[1], coord[0])
-                            route_x.append(x)
-                            route_y.append(y)
-                        ax.plot(route_x, route_y, 'red', linestyle='--', linewidth=2, alpha=0.7, zorder=5)
-
-                # Dessiner les points
                 for i, point in enumerate(points):
                     if point['is_depot']:
                         ax.plot(point['x'], point['y'], 'o', color='red', markersize=15,
@@ -336,50 +447,19 @@ class CERPDeliveryPDFGenerator:
                 ax.set_yticks([])
 
             except Exception as e:
-                print(f"Erreur contextily: {e}")
                 use_contextily = False
 
-        # Fallback carte simple
         if not use_contextily:
             ax.set_xlim(min_lon, max_lon)
             ax.set_ylim(min_lat, max_lat)
             ax.set_facecolor('#e6f3ff')
 
-            # Trajets OSRM en coordonnées géographiques
-            for i in range(len(points) - 1):
-                start_point = points[i]
-                end_point = points[i + 1]
+            if truck_number in self.all_routes_data:
+                route_geometry = self.all_routes_data[truck_number]
+                route_lats = [coord[0] for coord in route_geometry]
+                route_lons = [coord[1] for coord in route_geometry]
+                ax.plot(route_lons, route_lats, 'blue', linewidth=3, alpha=0.8)
 
-                start_coords = [start_point['lat'], start_point['lon']]
-                end_coords = [end_point['lat'], end_point['lon']]
-
-                route_coords = self.get_route_coordinates_osrm(start_coords, end_coords)
-
-                if route_coords and len(route_coords) > 1:
-                    route_lats = [coord[0] for coord in route_coords]
-                    route_lons = [coord[1] for coord in route_coords]
-                    ax.plot(route_lons, route_lats, 'blue', linewidth=3, alpha=0.8)
-                else:
-                    ax.plot([start_point['lon'], end_point['lon']],
-                            [start_point['lat'], end_point['lat']],
-                            'blue', linestyle='--', linewidth=2, alpha=0.6)
-
-            # Retour au dépôt
-            if len(points) > 1 and not points[-1]['is_depot']:
-                last_point = points[-1]
-                depot_point = points[0]
-
-                start_coords = [last_point['lat'], last_point['lon']]
-                end_coords = [depot_point['lat'], depot_point['lon']]
-
-                route_coords = self.get_route_coordinates_osrm(start_coords, end_coords)
-
-                if route_coords and len(route_coords) > 1:
-                    route_lats = [coord[0] for coord in route_coords]
-                    route_lons = [coord[1] for coord in route_coords]
-                    ax.plot(route_lons, route_lats, 'red', linestyle='--', linewidth=2, alpha=0.7)
-
-            # Points
             for i, point in enumerate(points):
                 if point['is_depot']:
                     ax.plot(point['lon'], point['lat'], 'o', color='red', markersize=12,
@@ -397,14 +477,14 @@ class CERPDeliveryPDFGenerator:
             ax.set_ylabel('Latitude')
             ax.grid(True, alpha=0.3)
 
-        # Sauvegarder
+        ax.set_title(f'Parcours Camionnette {truck_number}', fontsize=14, fontweight='bold', pad=20)
+
         img_buffer = io.BytesIO()
         plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight',
                     facecolor='white', edgecolor='none')
         img_buffer.seek(0)
         plt.close()
 
-        # Compression
         try:
             img = PILImage.open(img_buffer)
             compressed_buffer = io.BytesIO()
@@ -412,15 +492,13 @@ class CERPDeliveryPDFGenerator:
             compressed_buffer.seek(0)
             return compressed_buffer
         except Exception as e:
-            print(f"Erreur compression: {e}")
             return img_buffer
 
     def calculate_route_times(self, route, start_time_str):
-        """Calcule les horaires d'arrivée et de départ"""
         schedule = []
         current_time = datetime.strptime(start_time_str, "%H:%M")
 
-        # Départ du dépôt
+        # Départ -> dépôt
         schedule.append({
             'location': route[0],
             'type': 'depot_start',
@@ -428,7 +506,7 @@ class CERPDeliveryPDFGenerator:
             'departure': current_time.strftime("%H:%M")
         })
 
-        # Visites des pharmacies
+        # Livraison pharma
         for i in range(1, len(route)):
             current_loc = route[i - 1]
             next_loc = route[i]
@@ -448,7 +526,7 @@ class CERPDeliveryPDFGenerator:
                 'departure': departure_time
             })
 
-        # Retour au dépôt
+        # Retour -> dépôt
         if route[-1] != 0:
             last_loc = route[-1]
             travel_time_minutes = self.time_matrix[last_loc][0]
@@ -464,7 +542,6 @@ class CERPDeliveryPDFGenerator:
         return schedule
 
     def calculate_truck_stats(self, route):
-        """Calcule les statistiques d'une camionnette"""
         total_time_minutes = 0
         total_distance_km = 0
 
@@ -493,18 +570,16 @@ class CERPDeliveryPDFGenerator:
         }
 
     def generate_truck_pdf(self, truck_route, truck_number, period="morning"):
-        """Génère le PDF pour une camionnette"""
-        # Créer le dossier de sortie
-        os.makedirs("../generated", exist_ok=True)
-        output_file = f"../generated/parcours_camionnette_{truck_number}.pdf"
+        os.makedirs("generated", exist_ok=True)
+        output_file = f"generated/parcours_camionnette_{truck_number}.pdf"
 
         doc = SimpleDocTemplate(output_file, pagesize=A4, topMargin=1 * cm, bottomMargin=1 * cm,
                                 leftMargin=1.5 * cm, rightMargin=1.5 * cm)
         story = []
 
-        # Logo CERP en haut à gauche
         try:
-            logo_path = os.path.join("..", "data", "CERP_logo.png")
+            # TODO : ENELVER ".." POUR LANCER AVEC STREAMLIT
+            logo_path = os.path.join("data", "CERP_logo.png")
             if os.path.exists(logo_path):
                 logo_table_data = [
                     [Image(logo_path, width=2 * cm, height=1.5 * cm), ""]
@@ -520,9 +595,8 @@ class CERPDeliveryPDFGenerator:
                 story.append(logo_table)
                 story.append(Spacer(1, 10))
         except Exception as e:
-            print(f"Impossible de charger le logo: {e}")
+            print(f"{e}")
 
-        # Titre
         title_style = ParagraphStyle(
             'CustomTitle',
             parent=self.styles['Heading1'],
@@ -535,16 +609,13 @@ class CERPDeliveryPDFGenerator:
         title = f"Parcours Camionnette {truck_number}"
         story.append(Paragraph(title, title_style))
 
-        # Carte
         map_image = self.create_map_image(truck_route, truck_number)
         if map_image:
             story.append(Image(map_image, width=14 * cm, height=10.5 * cm))
             story.append(Spacer(1, 10))
 
-        # Horaires
         schedule = self.calculate_route_times(truck_route, start_time)
 
-        # Tableau avec colonnes ajustées : destination plus large, adresse plus petite avec police réduite
         data = [["Destination", "Adresse", "Arrivée", "Départ"]]
 
         for item in schedule:
@@ -568,7 +639,6 @@ class CERPDeliveryPDFGenerator:
                 item['departure'] if item['departure'] else ""
             ])
 
-        # Tableau avec destination plus large, adresse plus petite
         table = Table(data, colWidths=[5.5 * cm, 8.5 * cm, 2.5 * cm, 2.5 * cm])
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
@@ -576,7 +646,6 @@ class CERPDeliveryPDFGenerator:
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 10),
             ('FONTSIZE', (0, 1), (-1, -1), 9),
-            # Police plus petite pour les adresses (colonne 1)
             ('FONTSIZE', (1, 1), (1, -1), 7),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -589,18 +658,16 @@ class CERPDeliveryPDFGenerator:
         story.append(table)
         story.append(Spacer(1, 20))
 
-        # Sous-titre "Informations générales" aligné à gauche
         subtitle_style = ParagraphStyle(
             'CustomSubtitle',
             parent=self.styles['Heading2'],
             fontSize=12,
             spaceAfter=10,
-            alignment=0  # Aligné à gauche
+            alignment=0
         )
 
         story.append(Paragraph("Informations générales", subtitle_style))
 
-        # Statistiques dans un tableau aligné à gauche
         stats = self.calculate_truck_stats(truck_route)
 
         stats_data = [
@@ -610,7 +677,6 @@ class CERPDeliveryPDFGenerator:
             ["Durée:", f"{int(stats['total_hours'])}h{int(stats['total_minutes'] % 60):02d}"]
         ]
 
-        # Tableau des stats plus petit et aligné à gauche
         stats_table = Table(stats_data, colWidths=[5 * cm, 4 * cm])
         stats_table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
@@ -627,22 +693,19 @@ class CERPDeliveryPDFGenerator:
         story.append(stats_table)
 
         doc.build(story)
-        print(f"✅ PDF généré: {output_file}")
 
         return output_file
 
     def generate_summary_pdf(self, all_trucks, period="morning"):
-        """Génère le PDF récapitulatif"""
-        # Créer le dossier de sortie
-        os.makedirs("../generated", exist_ok=True)
-        output_file = f"../generated/recapitulatif_parcours.pdf"
+        os.makedirs("generated", exist_ok=True)
+        output_file = f"generated/recapitulatif_parcours.pdf"
 
         doc = SimpleDocTemplate(output_file, pagesize=A4)
         story = []
 
-        # Logo CERP en haut à gauche
         try:
-            logo_path = os.path.join("..", "data", "CERP_logo.png")
+            # TODO : ENELVER ".." POUR LANCER AVEC STREAMLIT
+            logo_path = os.path.join("data", "CERP_logo.png")
             if os.path.exists(logo_path):
                 logo_table_data = [
                     [Image(logo_path, width=3 * cm, height=2 * cm), ""]
@@ -658,7 +721,7 @@ class CERPDeliveryPDFGenerator:
                 story.append(logo_table)
                 story.append(Spacer(1, 15))
         except Exception as e:
-            print(f"Impossible de charger le logo: {e}")
+            print(f"{e}")
 
         title_style = ParagraphStyle(
             'CustomTitle',
@@ -668,7 +731,7 @@ class CERPDeliveryPDFGenerator:
             alignment=1
         )
 
-        title = f"Récapitulatif CERP - {period.capitalize()}"
+        title = f"Récapitulatif Parcours CERP"
         story.append(Paragraph(title, title_style))
 
         total_distance = 0
@@ -718,40 +781,46 @@ class CERPDeliveryPDFGenerator:
         story.append(summary_table)
 
         doc.build(story)
-        print(f"✅ PDF récapitulatif généré: {output_file}")
 
         return output_file
 
+    # TODO : REPLACE main PAR generate_pdf
 
-def generate_pdf():
-    """Fonction principale"""
-    print("=== Générateur de PDF CERP Rouen ===")
+# TODO : MAXIME jsp comment on modifie le main
+
+def main():
+    print("🚚 Génération des PDF de tournées CERP Rouen")
+    print("=" * 50)
 
     generator = CERPDeliveryPDFGenerator()
 
     if not generator.pharmacies or not generator.time_matrix or not generator.distance_matrix:
-        print("❌ ERREUR: Impossible de charger les données")
+        print("❌ Impossible de charger les données.")
         return
 
     optimal_route, trucks = generator.parse_route_file()
 
     if not trucks:
-        print("❌ ERREUR: Aucune camionnette trouvée dans output.txt")
+        print("❌ Aucune camionnette trouvée dans le fichier output")
         return
 
-    print(f"\n🚛 {len(trucks)} camionnette(s) trouvée(s)")
+    print(f"\n📡 Récupération des itinéraires GPS via OpenRouteService...")
+    generator.fetch_all_routes_openrouteservice(trucks)
 
     period = "morning"
 
+    print(f"\n📄 Génération des PDF...")
     for truck_num, truck_route in trucks.items():
-        print(f"\n📄 Génération PDF Camionnette {truck_num}")
-        generator.generate_truck_pdf(truck_route, truck_num, period)
+        output_file = generator.generate_truck_pdf(truck_route, truck_num, period)
+        print(f"  ✓ Camionnette {truck_num}: {output_file}")
 
-    print(f"\n📄 Génération du récapitulatif")
-    generator.generate_summary_pdf(trucks, period)
+    summary_file = generator.generate_summary_pdf(trucks, period)
+    print(f"  ✓ Récapitulatif: {summary_file}")
 
-    print(f"\n✅ Terminé! {len(trucks)} PDF + 1 récapitulatif générés dans ../generated/")
+    print(f"\n✅ Les {len(trucks)} PDF et le récapitulatif ont été générés avec succès!")
 
 
-if __name__ == "__generate_pdf__":
-    generate_pdf()
+# TODO : REPLACE main PAR generate_pdf
+
+if __name__ == "__main__":
+    main()
