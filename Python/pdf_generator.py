@@ -44,9 +44,9 @@ class CERPDeliveryPDFGenerator:
         self.diesel_price_per_liter = 1.72  # €/L
 
         # Chemins des fichiers
-        pharmacies_file = os.path.join("sources", "pharmacies_coordonnees.csv")
-        time_file = os.path.join("sources", "time.csv")
-        meters_file = os.path.join("sources", "meters.csv")
+        pharmacies_file = os.path.join("Python", "sources", "pharmacies_coordonnees.csv")
+        time_file = os.path.join("Python", "sources", "time.csv")
+        meters_file = os.path.join("Python", "sources", "meters.csv")
 
         print(f"Chargement pharmacies: {pharmacies_file}")
         print(f"Chargement temps: {time_file}")
