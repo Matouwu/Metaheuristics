@@ -5,6 +5,8 @@
 #include <limits.h>
 #include "genetic.h"
 
+#include <stdint.h>
+
 // Calcul de la durée d'une route
 int route_duration(Board board, Route* route) {
     if (route->length == 0) return 0;
@@ -18,9 +20,9 @@ int route_duration(Board board, Route* route) {
 }
 
 // Calcul du fitness
-int calculate_fitness(Board board, Solution* solution) {
-    int fitness = 0;
-    int penalty = 0;
+unsigned long long calculate_fitness(Board board, Solution* solution) {
+    unsigned long long fitness = 0;
+    unsigned long long penalty = 0;
     solution->total_duration = 0;
 
     for (int i = 0; i < solution->num_vehicles; i++) {
@@ -493,7 +495,7 @@ void solve_vrp(Board board, Solution* best_solution) {
         evolve_population(board, &pop);
 
         if (gen % 10 == 0) {
-            printf("Generation %d: Fitness=%d Vehicules=%d Duree=%d\n",
+            printf("Generation %d: Fitness=%lld Vehicules=%d Duree=%d\n",
                    gen, pop.best_ever.fitness,
                    pop.best_ever.solution.num_vehicles,
                    pop.best_ever.solution.total_duration);

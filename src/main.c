@@ -36,13 +36,13 @@ int main(int argc, char* argv[]) {
 
     for (int run = 0; run < 5; run++) {
         solve_vrp(board, &candidate);
-        int fitness = calculate_fitness(board, &candidate);
+        long long fitness = calculate_fitness(board, &candidate);
 
         if (fitness < best_fitness) {
             best_solution = candidate;
             best_fitness = fitness;
         }
-        printf("Execution %d: fitness=%d\n", run+1, fitness);
+        printf("Execution %d: fitness=%lld\n", run+1, fitness);
     }
 
     clock_t end = clock();

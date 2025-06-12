@@ -12,7 +12,7 @@
 
 typedef struct {
     Solution solution;
-    int fitness;
+    unsigned long long fitness;
 } Individual;
 
 typedef struct {
@@ -28,7 +28,7 @@ void evolve_population(Board board, Population* pop);
 void solve_vrp(Board board, Solution* best_solution);
 
 // Fonctions utilitaires
-int calculate_fitness(Board board, Solution* solution);
+unsigned long long calculate_fitness(Board board, Solution* solution);
 void print_solution(Solution* solution);
 int route_duration(Board board, Route* route);
 void repair_solution(Board board, Solution* sol);
