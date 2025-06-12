@@ -3,27 +3,28 @@
 #include <string.h>
 #include <time.h>
 #include <limits.h>
-#include "../include/inout.h"
-#include "../include/location.h"
-#include "../include/genetic.h"
+#include "inout.h"
+#include "location.h"
+#include "genetic.h"
 
 int main(int argc, char* argv[]) {
-    // if (argc < 2) {
-    //     printf("Usage: %s distance_file.csv\n", argv[0]);
-    //     return EXIT_FAILURE;
-    // }
+    if (argc < 2) {
+        printf("Usage: %s distance_file.csv\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
     Board board;
     initBoard(board);
 
-    // if (!fread_board(argv[1], board)) {
-    //     printf("Erreur lors de la lecture du fichier\n");
-    //     return EXIT_FAILURE;
-    // }
-    if (!fread_board("data/distance.csv", board)) {
+    if (!fread_board(argv[1], board)) {
         printf("Erreur lors de la lecture du fichier\n");
         return EXIT_FAILURE;
     }
+    // if (!fread_board("data/distance.csv", board)) {
+    //     printf("Erreur lors de la lecture du fichier\n");
+    //     return EXIT_FAILURE;
+    // }
+    printf("Nombre de villes detecté : %d\n", NUM_CITIES);
     display_board(board);
 
     Solution best_solution;

@@ -4,8 +4,9 @@
 #include <time.h>
 #include <limits.h>
 #include "genetic.h"
+#include "location.h"  // Pour accéder à NUM_CITIES
 
-#include <stdint.h>
+extern int NUM_CITIES;  // Référence à la variable globale
 
 // Calcul de la durée d'une route
 int route_duration(Board board, Route* route) {
@@ -37,14 +38,14 @@ unsigned long long calculate_fitness(Board board, Solution* solution) {
     }
 
     // Pénalité pour villes non visitées
-    int visited[NUM_CITIES] = {0};
+    int visited[MAX_CITIES] = {0};  // Taille fixe MAX_CITIES
     visited[DEPOT] = 1;
     for (int i = 0; i < solution->num_vehicles; i++) {
         for (int j = 0; j < solution->routes[i].length; j++) {
             visited[solution->routes[i].path[j]] = 1;
         }
     }
-    for (int i = 0; i < NUM_CITIES; i++) {
+    for (int i = 0; i < NUM_CITIES; i++) {  // Boucle jusqu'à NUM_CITIES
         if (!visited[i]) penalty += PENALTY_PER_VIOLATION;
     }
 
@@ -67,11 +68,11 @@ void init_solution(Solution* solution) {
 void build_initial_solution(Board board, Solution* sol) {
     init_solution(sol);
 
-    int visited[NUM_CITIES] = {0};
+    int visited[MAX_CITIES] = {0};
     visited[DEPOT] = 1;
 
     int unvisited_count = NUM_CITIES - 1;
-    int unvisited[NUM_CITIES];
+    int unvisited[MAX_CITIES];
     for (int i = 0, j = 0; i < NUM_CITIES; i++) {
         if (i != DEPOT) unvisited[j++] = i;
     }
@@ -133,7 +134,7 @@ void build_initial_solution(Board board, Solution* sol) {
 
 // Réparation de solution
 void repair_solution(Board board, Solution* sol) {
-    int visited[NUM_CITIES] = {0};
+    int visited[MAX_CITIES] = {0};
     visited[DEPOT] = 1;
 
     // Marquer les villes visitées
@@ -230,7 +231,7 @@ void crossover(Board board, Individual* parent1, Individual* parent2, Individual
     child->solution.num_vehicles = 1;
 
     // Marquer les villes copiées
-    int visited[NUM_CITIES] = {0};
+    int visited[MAX_CITIES] = {0};
     for (int i = 0; i < child_route->length; i++) {
         visited[child_route->path[i]] = 1;
     }

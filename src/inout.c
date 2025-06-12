@@ -2,47 +2,50 @@
 #include <stdlib.h>
 #include <string.h>
 #include "inout.h"
+#include "location.h"
+
+int NUM_CITIES = 0;  // Définition de la variable globale
 
 int fread_board(const char* file, Board board) {
     FILE* f = fopen(file, "r");
     char line[MAX_LINE_LENGTH];
-    int row = 0;
+    int num_lines = 0;
 
     if (f == NULL) {
         fprintf(stderr, "Erreur d'ouverture du fichier %s\n", file);
         return 0;
     }
 
-    // Ignorer la première ligne (en-tête des colonnes)
-    fgets(line, MAX_LINE_LENGTH, f);
+    // Compter le nombre de lignes (villes)
+    fgets(line, MAX_LINE_LENGTH, f); // Ignorer l'en-tête
+    while (fgets(line, MAX_LINE_LENGTH, f) != NULL) {
+        num_lines++;
+    }
 
-    // Lire chaque ligne suivante
-    while (fgets(line, MAX_LINE_LENGTH, f) != NULL && row < NUM_CITIES) {
+    if (num_lines > MAX_CITIES) {
+        fprintf(stderr, "Trop de villes! Max=%d\n", MAX_CITIES);
+        fclose(f);
+        return 0;
+    }
+
+    NUM_CITIES = num_lines;  // Assigner le nombre réel de villes
+
+    // Relire le fichier pour extraire les données
+    rewind(f);
+    fgets(line, MAX_LINE_LENGTH, f); // Ignorer à nouveau l'en-tête
+
+    for (int row = 0; row < NUM_CITIES; row++) {
+        if (fgets(line, MAX_LINE_LENGTH, f) == NULL) break;
+
         int col = 0;
-        char* token = strtok(line, ",");  // Ignorer le premier champ de la ligne (index de ligne)
+        char* token = strtok(line, ",");
+        token = strtok(NULL, ","); // Ignorer la première colonne
 
-        // Lire les champs suivants (valeurs de la ligne)
-        token = strtok(NULL, ",");
         while (token != NULL && col < NUM_CITIES) {
             board[row][col] = atoi(token);
             token = strtok(NULL, ",");
             col++;
         }
-
-        // Vérification optionnelle
-        if (col != NUM_CITIES) {
-            fprintf(stderr, "Erreur : ligne %d a %d colonnes au lieu de %d\n", row, col, NUM_CITIES);
-            fclose(f);
-            return 0;
-        }
-
-        row++;
-    }
-
-    if (row != NUM_CITIES) {
-        fprintf(stderr, "Erreur : le fichier contient %d lignes au lieu de %d\n", row, NUM_CITIES);
-        fclose(f);
-        return 0;
     }
 
     fclose(f);

@@ -1,14 +1,16 @@
 #ifndef LOCATION_H
 #define LOCATION_H
 
-#define NUM_CITIES 21
+#define MAX_CITIES 200  // Taille maximale
 #define MAX_VEHICLES 20
 #define MAX_ROUTE_LENGTH 50
-#define MAX_TIME 10800 // 3 heures en secondes
+#define MAX_TIME 10800
 #define DEPOT 0
 #define PENALTY_PER_VIOLATION 10000000
 
-typedef int Board[NUM_CITIES][NUM_CITIES];
+extern int NUM_CITIES;  // Variable globale
+
+typedef int Board[MAX_CITIES][MAX_CITIES];  // Utilise MAX_CITIES
 
 typedef struct {
     int path[MAX_ROUTE_LENGTH];
