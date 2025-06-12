@@ -16,10 +16,8 @@ from reportlab.lib.units import cm
 from reportlab.lib import colors
 import requests
 import io
-import base64
 from PIL import Image as PILImage
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 try:
     import contextily as ctx
     CONTEXTILY_AVAILABLE = True

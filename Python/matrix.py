@@ -4,10 +4,6 @@ import os
 
 
 def extract_and_convert_matrices():
-    """
-    Extrait les sous-matrices avec indices originaux puis les convertit en indices séquentiels.
-    """
-
     print("Extraction des sous-matrices...")
 
     try:
@@ -38,13 +34,13 @@ def extract_and_convert_matrices():
     indices_sequentiels = list(range(len(coord_df)))
 
     final_distance_matrix = pd.DataFrame(
-        sub_distance.values,
+        sub_distance.values.astype(int),
         index=indices_sequentiels,
         columns=indices_sequentiels
     )
 
     final_time_matrix = pd.DataFrame(
-        sub_time.values,
+        sub_time.values.astype(int),
         index=indices_sequentiels,
         columns=indices_sequentiels
     )
