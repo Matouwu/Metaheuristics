@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g -Iinclude -O3
+CFLAGS = -Wall -ansi -g -Iinclude -O3
 SRC_DIR = src
 OBJ_DIR = bin
 INCLUDE_DIR = include

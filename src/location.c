@@ -3,24 +3,28 @@
 #include "location.h"
 
 void initBoard(Board board) {
-    for (int i = 0; i < MAX_CITIES; i++) {
-        for (int j = 0; j < MAX_CITIES; j++) {
+    int i, j;
+    for (i = 0; i < MAX_CITIES; i++) {
+        for (j = 0; j < MAX_CITIES; j++) {
             board[i][j] = (i == j) ? 0 : -1;
         }
     }
 }
 
 void display_board(Board board) {
+    int i, j;
+    int display_size;
+
     if (NUM_CITIES == 0) {
         printf("Aucune ville chargée\n");
         return;
     }
 
     printf("Matrice des distances (tronquée):\n");
-    int display_size = (NUM_CITIES < 5) ? NUM_CITIES : 5;
+    display_size = (NUM_CITIES < 5) ? NUM_CITIES : 5;
 
-    for (int i = 0; i < display_size; i++) {
-        for (int j = 0; j < display_size; j++) {
+    for (i = 0; i < display_size; i++) {
+        for (j = 0; j < display_size; j++) {
             printf("%6d ", board[i][j]);
         }
         printf("\n");
