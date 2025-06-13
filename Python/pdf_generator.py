@@ -40,14 +40,9 @@ class CERPDeliveryPDFGenerator:
         self.fuel_consumption_per_100km = 6.5  # L/100km
         self.diesel_price_per_liter = 1.72  # €/L
 
-        # TODO : REPLACE par le code en commentaire POUR LANCER AVEC STREAMLIT
-        pharmacies_file = os.path.join("Python", "sources", "pharmacies_coordonnees.csv")
-        time_file = os.path.join("Python", "sources", "time.csv")
-        meters_file = os.path.join("Python", "sources", "meters.csv")
-
-        # pharmacies_file = os.path.join("sources", "pharmacies_coordonnees.csv")
-        # time_file = os.path.join("sources", "time.csv")
-        # meters_file = os.path.join("sources", "meters.csv")
+        pharmacies_file = os.path.join("Python", "output", "coord.csv")
+        time_file = os.path.join("Python", "output", "time.csv")
+        meters_file = os.path.join("Python", "output", "meters.csv")
 
         print(f"Chargement pharmacies: {pharmacies_file}")
         print(f"Chargement temps: {time_file}")
@@ -141,7 +136,6 @@ class CERPDeliveryPDFGenerator:
 
         return distance_matrix
 
-    # TODO : ENELVER ".." POUR LANCER AVEC STREAMLIT
     def parse_route_file(self, route_file=os.path.join("data", "output.txt")):
         try:
             with open(route_file, 'r', encoding='utf-8') as f:
@@ -164,7 +158,7 @@ class CERPDeliveryPDFGenerator:
                     trucks[truck_num] = truck_route
                     all_routes.extend(route)
 
-                    print(f"Camionnette {truck_num}: {truck_route}")
+                    print(f"Camionnette {truck_num}: {truck_route + [0]}")
 
             return all_routes, trucks
 
@@ -578,7 +572,6 @@ class CERPDeliveryPDFGenerator:
         story = []
 
         try:
-            # TODO : ENELVER ".." POUR LANCER AVEC STREAMLIT
             logo_path = os.path.join("data", "CERP_logo.png")
             if os.path.exists(logo_path):
                 logo_table_data = [
@@ -704,7 +697,6 @@ class CERPDeliveryPDFGenerator:
         story = []
 
         try:
-            # TODO : ENELVER ".." POUR LANCER AVEC STREAMLIT
             logo_path = os.path.join("data", "CERP_logo.png")
             if os.path.exists(logo_path):
                 logo_table_data = [
@@ -784,11 +776,7 @@ class CERPDeliveryPDFGenerator:
 
         return output_file
 
-    # TODO : REPLACE main PAR generate_pdf
-
-# TODO : MAXIME jsp comment on modifie le main
-
-def main():
+def generate_pdf():
     print("🚚 Génération des PDF de tournées CERP Rouen")
     print("=" * 50)
 
@@ -818,9 +806,3 @@ def main():
     print(f"  ✓ Récapitulatif: {summary_file}")
 
     print(f"\n✅ Les {len(trucks)} PDF et le récapitulatif ont été générés avec succès!")
-
-
-# TODO : REPLACE main PAR generate_pdf
-
-if __name__ == "__main__":
-    main()

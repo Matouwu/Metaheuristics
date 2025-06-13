@@ -24,8 +24,6 @@ def main():
             st.header("Aperçu du fichier")
             st.dataframe(df)
 
-            val = None
-
             if st.button("Trouver le meilleur chemin", type="primary"):
                 with st.spinner("Traitement en cours :"):
                     process_file(uploaded_file)
@@ -57,7 +55,12 @@ def process_file(uploaded_file):
         if st.session_state["result_matrix"] is None:
             st.error("Échec de l'extraction des matrices")
             return
-        cmd = ["./vrp", "./Python/output/time.csv"]
+        subprocess.run(["make", "clean"], cwd=".", capture_output=True, text=True)
+        build = subprocess.run(["make"], cwd=".", capture_output=True, text=True)
+        if build.returncode != 0:
+            st.error(f"Erreur lors du make :\n{build.stderr}")
+            return
+        cmd = ["./vrp", "./Python/output/time.csv", "./Python/output/meters.csv"]
         subprocess.run(cmd, capture_output=True, text=True)
         st.session_state["Ran"] = True
     except Exception as e:

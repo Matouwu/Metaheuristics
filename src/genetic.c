@@ -23,7 +23,7 @@ int route_duration(Board board, Route* route) {
 
     if (route->length == 0) return 0;
 
-    duration = board[DEPOT][route->path[0]];
+    duration = board[DEPOT][route->path[0]] + SERVICE_TIME;
     for (i = 0; i < route->length - 1; i++) {
         duration += board[route->path[i]][route->path[i+1]] + SERVICE_TIME;
     }
@@ -592,7 +592,7 @@ void print_solution(Solution* solution) {
 
     for (i = 0; i < solution->num_vehicles; i++) {
         Route* route = &solution->routes[i];
-        printf("Véhicule %d (%ds, %dm): Depot", i+1, route->duration, route->distance);
+        printf("Véhicule %d (%ds, %dm) (%d pharmacies): Depot", i+1, route->duration, route->length, route->distance);
         for (j = 0; j < route->length; j++) {
             printf(" -> %d", route->path[j]);
         }
