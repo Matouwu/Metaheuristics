@@ -1,23 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/location.h"
+#include "location.h"
 
 void initBoard(Board board) {
-  // Initialisation par défaut (sera écrasée par fread_board)
-  for (int i = 0; i < NUM_CITIES; i++) {
-    for (int j = 0; j < NUM_CITIES; j++) {
-      board[i][j] = (i == j) ? 0 : 999999;
+    for (int i = 0; i < MAX_CITIES; i++) {
+        for (int j = 0; j < MAX_CITIES; j++) {
+            board[i][j] = (i == j) ? 0 : -1;
+        }
     }
-  }
 }
 
 void display_board(Board board) {
-  printf("Matrice des distances:\n");
-  for (int i = 0; i < 5; i++) { // Affiche seulement les 5 premières lignes
-    for (int j = 0; j < 5; j++) { // et 5 premières colonnes
-      printf("%6d ", board[i][j]);
+    if (NUM_CITIES == 0) {
+        printf("Aucune ville chargée\n");
+        return;
     }
-    printf("\n");
-  }
-  printf("[...] (Matrice tronquée)\n");
+
+    printf("Matrice des distances (tronquée):\n");
+    int display_size = (NUM_CITIES < 5) ? NUM_CITIES : 5;
+
+    for (int i = 0; i < display_size; i++) {
+        for (int j = 0; j < display_size; j++) {
+            printf("%6d ", board[i][j]);
+        }
+        printf("\n");
+    }
+
+    if (NUM_CITIES > 5) {
+        printf("[...] (Matrice de %d x %d)\n", NUM_CITIES, NUM_CITIES);
+    }
 }

@@ -4,7 +4,7 @@
 #include "inout.h"
 #include "location.h"
 
-int NUM_CITIES = 0;  // Définition de la variable globale
+int NUM_CITIES = 0;
 
 int fread_board(const char* file, Board board) {
     FILE* f = fopen(file, "r");
@@ -28,7 +28,7 @@ int fread_board(const char* file, Board board) {
         return 0;
     }
 
-    NUM_CITIES = num_lines;  // Assigner le nombre réel de villes
+    NUM_CITIES = num_lines;
 
     // Relire le fichier pour extraire les données
     rewind(f);

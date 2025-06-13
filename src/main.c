@@ -8,36 +8,40 @@
 #include "genetic.h"
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        printf("Usage: %s distance_file.csv\n", argv[0]);
+    if (argc < 3) {
+        printf("Usage: %s time_file.csv distance_file.csv\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    Board board;
-    initBoard(board);
+    Board time_board, dist_board;
+    initBoard(time_board);
+    initBoard(dist_board);
 
-    if (!fread_board(argv[1], board)) {
-        printf("Erreur lors de la lecture du fichier\n");
+    if (!fread_board(argv[1], time_board)) {
+        printf("Erreur lors de la lecture du fichier temps\n");
         return EXIT_FAILURE;
     }
-    // if (!fread_board("data/distance.csv", board)) {
-    //     printf("Erreur lors de la lecture du fichier\n");
-    //     return EXIT_FAILURE;
-    // }
+    if (!fread_board(argv[2], dist_board)) {
+        printf("Erreur lors de la lecture du fichier distances\n");
+        return EXIT_FAILURE;
+    }
+
     printf("Nombre de villes detecté : %d\n", NUM_CITIES);
-    display_board(board);
+    printf("Matrice temps:\n");
+    display_board(time_board);
+    printf("\nMatrice distances:\n");
+    display_board(dist_board);
 
     Solution best_solution;
     printf("\nDémarrage de l'algorithme génétique...\n");
     clock_t start = clock();
 
-    // Exécuter plusieurs fois pour éviter les minima locaux
     int best_fitness = INT_MAX;
     Solution candidate;
 
     for (int run = 0; run < 5; run++) {
-        solve_vrp(board, &candidate);
-        long long fitness = calculate_fitness(board, &candidate);
+        solve_vrp(time_board, dist_board, &candidate);
+        long long fitness = calculate_fitness(time_board, dist_board, &candidate);
 
         if (fitness < best_fitness) {
             best_solution = candidate;
@@ -54,7 +58,7 @@ int main(int argc, char* argv[]) {
     write_solution("data/output.txt", &best_solution);
 
     // Calcul des statistiques
-    float total_distance_km = best_solution.total_duration / 3600.0 * 50.0; // 50 km/h
+    float total_distance_km = best_solution.total_distance / 1000.0;
     float fuel_consumption = total_distance_km * 6.5 / 100.0; // 6.5 L/100km
     float fuel_cost = fuel_consumption * 1.72; // 1.72 €/L
 
